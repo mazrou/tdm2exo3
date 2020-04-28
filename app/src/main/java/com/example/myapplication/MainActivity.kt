@@ -34,8 +34,8 @@ class MainActivity : AppCompatActivity() ,IntervAdapter.OnIntervListener{
         ).build()*/
         initDB()
 
-       // intervList?.addAll(array)
-
+         intervList?.addAll(array)
+        Log.i("main",array.size.toString())
         val recyclerView =findViewById(com.example.myapplication.R.id.recyclerView) as RecyclerView
         layoutManager = LinearLayoutManager(this)
 
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() ,IntervAdapter.OnIntervListener{
                 val intent = Intent(activity, TraitInterv_Activity::class.java)
                 intent.putExtra("mode","ajout")
                 startActivity(intent)
-                Log.i("kotlin",intervList?.size.toString())
+                Log.i("mainn",intervList?.size.toString())
             }
 
 
@@ -65,30 +65,24 @@ class MainActivity : AppCompatActivity() ,IntervAdapter.OnIntervListener{
     override fun OnItemClick(item: Interv, position: Int) {
         Toast.makeText(this, item.nom , Toast.LENGTH_SHORT).show()
         val intent = Intent(this,TraitInterv_Activity::class.java)
-        intent.putExtra("CARNAME", item.nom)
+        intent.putExtra("mode","modif")
+        intent.putExtra("pos", position)
 
-        startActivity(intent)    }
+        startActivity(intent)
+    }
     fun initDB() {
         var act = this
-
-
         object : AsyncTask<Void, Void, Void>() {
             override fun doInBackground(vararg voids: Void): Void? {
-                act.db = DataBase.getInstance(act)
-                act.dao = db?.IntervDAO()
-                array = act.dao!!.getIntervs()
-                Log.i("kotlin",array.size.toString())
-
+                act.db = DataBase.invoke(act)
+                act.dao = db?.intervDAO()
+                intervList= act.dao!!.getIntervs()
+                Log.i("kotlin",intervList!!.size.toString())
                 return null
             }
-
             override fun onPostExecute(result: Void?) {
                 if(intervList != null) {
-
-
-                }
-
-            }
+                } }
         }.execute()
     }
 

@@ -7,6 +7,7 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
@@ -33,12 +34,7 @@ class TraitInterv_Activity : AppCompatActivity() {
         val mois = c.get(Calendar.MONTH)
         val jour = c.get(Calendar.DAY_OF_MONTH)
 
-      /*  db = Room.databaseBuilder(
-            this,
-           DataBase::class.java, "Intervention"
-        )
-            .allowMainThreadQueries()
-            .build()*/
+
 
         val addDate = findViewById<Button>(R.id.addDate)
         val spinner_type  = findViewById<Spinner>(R.id.spinner_type)
@@ -47,35 +43,86 @@ class TraitInterv_Activity : AppCompatActivity() {
         val  spinner_nom_text = findViewById<TextView>(R.id.spinner_nom_text)
          val  spinner_type_text = findViewById<TextView>(R.id.spinner_type_text)
         val  NumInter =findViewById<TextView>(R.id.editNom)
+          val btn_supp=findViewById<Button>(R.id.supp)
 
-        val btn_ajouter = findViewById<Button>(R.id.ajouter)
+        val btn_ajouter = findViewById<Button>(R.id.Apliquer)
         val  mode = intent.getStringExtra("mode")
         if(mode == "modif")
         {
-            val pos =intent.getIntExtra("pos",0)
-           // val interv=  db?.IntervDAO()!!.getInterv(pos)
-           // spinner_nom_text.text=interv[0].nom
-           // spinner_type_text.text=interv[0].Type
-            //InputDate.text=interv[0].date
-            //NumInter.text=interv[0].num
+           val pos =intent.getIntExtra("pos",0)
+            this.db = DataBase.invoke(this)
+            this.dao = db?.intervDAO()
+
+            val interv=  dao?.getInterv(pos+1)
+
+            spinner_nom_text.text=interv!![0].nom
+           spinner_type_text.text=interv!![0].Type
+
+            InputDate.text=interv!![0].date
+            NumInter.text=interv!![0].num
+
+
         }
+       if (mode=="ajout")
+       {
+           btn_supp.visibility= View.GONE
+       }
+        btn_supp.setOnClickListener{
+            val num: String = NumInter.text.toString()
+            val type: String = spinner_type_text.text.toString()
+            val nomp: String = spinner_nom_text.text.toString()
+            val date: String = InputDate.text.toString()
+            val pos =intent.getIntExtra("pos",0)
+
+            val interv: Interv = Interv(pos+1, num, nomp, type, date)
+
+            this.db = DataBase.invoke(this)
+            this.dao = db?.intervDAO()
+            dao?.supprimer(interv)
+
+            val intent = Intent(this, MainActivity::class.java)
+
+            startActivity(intent)
+        }
+
+
         btn_ajouter.setOnClickListener{
+
+
+            if(mode == "ajout") {
                 val num: String = NumInter.text.toString()
                 val type: String = spinner_type.selectedItem.toString()
                 val nomp: String = spinner_nom.selectedItem.toString()
                 val date: String = InputDate.text.toString()
-
                 val interv: Interv = Interv(0, num, nomp, type, date)
-            if(mode == "ajout") {
-                initDB(interv)
+                this.db = DataBase.invoke(this)
+                this.dao = db?.intervDAO()
+                dao?.ajouter(interv)
+
                 val intent = Intent(this, MainActivity::class.java)
 
                 startActivity(intent)
             }
-            else {
-                //db?.IntervDAO()!!.modifier(interv)
+            else{
+                if (mode=="modif") {
+                    val num: String = NumInter.text.toString()
+                    val type: String = spinner_type.selectedItem.toString()
+                    val nomp: String = spinner_nom.selectedItem.toString()
+                    val date: String = InputDate.text.toString()
+                    val pos =intent.getIntExtra("pos",0)
+                    val interv: Interv = Interv(pos+1, num, nomp, type, date)
 
-            } }
+
+                    this.db = DataBase.invoke(this)
+                    this.dao = db?.intervDAO()
+                    dao?.modifier(interv)
+                    val intent = Intent(this, MainActivity::class.java)
+
+                    startActivity(intent)
+                }
+
+            }
+             }
         addDate.setOnClickListener {
             val datePickerDialog = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { view, annee, mois, jour ->
                 InputDate!!.text="$jour-${mois+1}-$annee"
@@ -102,29 +149,12 @@ class TraitInterv_Activity : AppCompatActivity() {
         adapterSpinner_T.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner_type.setAdapter(adapterSpinner_T)
 
-        spinner_nom_text!!.text=spinner_nom.selectedItem.toString()
-        spinner_type_text!!.text=spinner_type.selectedItem.toString()
+        //spinner_nom_text!!.text=spinner_nom.selectedItem.toString()
+        //spinner_type_text!!.text=spinner_type.selectedItem.toString()
 
     }
 
-    fun initDB(interv:Interv) {
-        var act = this
 
-
-        object : AsyncTask<Void, Void, Void>() {
-            override fun doInBackground(vararg voids: Void): Void? {
-                act.db = DataBase.getInstance(act)
-                act.dao = db?.IntervDAO()
-                dao?.ajouter(interv)
-
-
-                return null
-            }
-
-
-
-        }
-    }
 
 }
 

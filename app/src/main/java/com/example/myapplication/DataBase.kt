@@ -6,29 +6,27 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = arrayOf(Interv::class), version = 1)
+@Database(entities = [Interv::class], version = 1)
 abstract class DataBase :RoomDatabase(){
-    abstract fun IntervDAO(): IntervDAO
+    abstract fun intervDAO(): IntervDAO
     companion object {
-        private var instance: DataBase? = null
-
-        fun getInstance(context: Context):DataBase? {
-            if (instance == null) {
-
-                instance = Room.databaseBuilder(context.getApplicationContext(),
-                    DataBase::class.java, "produit.db")
-                    .build()
+        @Volatile private var instance: DataBase? = null
+        private val LOCK = Any()
+        operator fun invoke(context: Context) = instance ?: synchronized(LOCK){
+            instance ?: buildDataBase(context).also{ instance = it}
+        }
+        private fun buildDataBase(context: Context ) =
+            Room.databaseBuilder(context.applicationContext ,
+                DataBase::class.java ,
+                "interv.db").allowMainThreadQueries().build()
 
             }
-            return instance
+
         }
 
-        fun destroyInstance() {
-            instance = null
-        }
-    }
 
-    }
+
+
 
 
 

@@ -6,7 +6,7 @@ import androidx.room.*
 @Dao
 public interface IntervDAO {
     @Query("SELECT * FROM interv")
-    fun getIntervs(): Array<Interv>
+    fun getIntervs(): MutableList<Interv>
 
     @Query("SELECT * FROM interv WHERE id = :code")
     fun getInterv(code: Int): List<Interv>
